@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>图像识别</title>
+    <style type="text/css">
+        .a-upload {
+            padding: 4px 10px;
+            height: 20px;
+            line-height: 20px;
+            position: relative;
+            cursor: pointer;
+            color: #888;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            display: inline-block;
+            *display: inline;
+            *zoom: 1
+        }
+
+        .a-upload input {
+            position: absolute;
+            font-size: 100px;
+            right: 0;
+            top: 0;
+            opacity: 0;
+            filter: alpha(opacity=0);
+            cursor: pointer
+        }
+
+        .a-upload:hover {
+            color: #444;
+            background: #eee;
+            border-color: #ccc;
+            text-decoration: none
+        }
+
+        body {
+            text-align: center;
+            background-image: url(static/bj.jpg);
+            background-repeat: no-repeat;
+            background-size: 100%;
+        }
+
+        #tou {
+            color: #00ffff;
+            font-size: 40px;
+        }
+    </style>
+</head>
+
+<body>
+<h1 id="tou">图像识别</h1>
+<form enctype="multipart/form-data" name="form1" action="/file" method="post">
+    <a href="javascript:" class="a-upload">
+        <input id="file" type="file" name="file" onchange="change()"/><b>选择图片</b>
+        <br/>
+    </a>
+    <a href="javascript:" class="a-upload">
+        <input type="submit"/><b>上传</b>
+    </a>
+    <p style="font-size: 20px;color: #00ffff"><b>预览图片:</b></p>
+    <p>
+        <img id="preview" alt="" name="pic" style="width: 50%"/>
+    </p>
+</form>
+</body>
+
+<script>
+    function change() {
+        var pic = document.getElementById("preview"),
+            file = document.getElementById("file");
+
+        var ext = file.value.substring(file.value.lastIndexOf(".") + 1).toLowerCase();
+
+        // gif在IE浏览器暂时无法显示
+        if (ext != 'png' && ext != 'jpg' && ext != 'jpeg') {
+            alert("图片的格式必须为png或者jpg或者jpeg格式！");
+            return;
+        }
+        var isIE = navigator.userAgent.match(/MSIE/) != null,
+            isIE6 = navigator.userAgent.match(/MSIE 6.0/) != null;
+
+        if (isIE) {
+            file.select();
+            var reallocalpath = document.selection.createRange().text;
+
+            // IE6浏览器设置img的src为本地路径可以直接显示图片
+            if (isIE6) {
+                pic.src = reallocalpath;
+            } else {
+                // 非IE6版本的IE由于安全问题直接设置img的src无法显示本地图片，但是可以通过滤镜来实现
+                pic.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod='image',src=\"" + reallocalpath + "\")";
+                // 设置img的src为base64编码的透明图片 取消显示浏览器默认图片
+                pic.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+            }
+        } else {
+            html5Reader(file);
+        }
+    }
+
+    function html5Reader(file) {
+        var file = file.files[0];
+        var reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function (e) {
+            var pic = document.getElementById("preview");
+            pic.src = this.result;
+        }
+    }
+</script>
+</html>

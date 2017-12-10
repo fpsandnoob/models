@@ -13,6 +13,7 @@ from utils import label_map_util
 
 from utils import visualization_utils as vis_util
 
+config = tf.ConfigProto(device_count={'GPU': 0})
 # What model to download.
 MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
 MODEL_FILE = MODEL_NAME + '.tar.gz'
@@ -46,7 +47,7 @@ PATH_TO_TEST_IMAGES_DIR = 'test_images'
 TEST_IMAGE_PATHS = [os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(1, 3)]
 IMAGE_SIZE = (1920, 1080)
 with detection_graph.as_default():
-    with tf.Session(graph=detection_graph) as sess:
+    with tf.Session(graph=detection_graph, config=config) as sess:
         # Definite input and output Tensors for detection_graph
         image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
         # Each box represents a part of the image where a particular object was detected.
@@ -80,6 +81,8 @@ def inference(image_path):
         line_thickness=10)
     plt.figure(figsize=IMAGE_SIZE, dpi=500)
     plt.imshow(image_np1)
+    if os.path.exists(image_path.split('.')[0] + '_.jpg'):
+        os.remove(image_path.split('.')[0] + '_.jpg')
     plt.savefig(image_path.split('.')[0] + '_.jpg')  # Add
     return image_path.split('.')[0] + '_labeled.jpg'
 
@@ -87,19 +90,21 @@ def inference(image_path):
 # Size, in inches, of the output images.
 IMAGE_SIZE = (12, 8)
 
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write('''
-                  <html>
-                    <head><br>                      <title>Upload File</title><br>                    </head>
-                    <body>
-                      <form action='file' enctype="multipart/form-data" method='post'>
-                        <input type='file' name='file'/><br/>
-                        <input type='submit' value='submit'/>
-                      </form>
-                    </body>
-                  </html>
-                  ''')
+        # self.write('''
+        #           <html>
+        #             <head><br>                      <title>Upload File</title><br>                    </head>
+        #             <body>
+        #               <form action='file' enctype="multipart/form-data" method='post'>
+        #                 <input type='file' name='file'/><br/>
+        #                 <input type='submit' value='submit'/>
+        #               </form>
+        #             </body>
+        #           </html>
+        #           ''')
+        self.render("main.html")
 
     def post(self):
         upload_path = os.path.join(os.path.dirname(__file__), 'static')  # 文件的暂存路径
@@ -110,15 +115,34 @@ class MainHandler(tornado.web.RequestHandler):
             with open(filepath, 'wb') as up:  # 有些文件需要已二进制的形式存储，实际中可以更改
                 up.write(meta['body'])
             inference(filepath)
-            self.write('''<!DOCTYPE html>
-                            <html>
-                            <head> 
-                            <meta charset="utf-8"> 
-                            </head>
-                            <body>
-                            <img border="0" src={} width="100%">
-                            </body>
-                            </html>'''.format("static/{}_.jpg".format(filename.split(".")[0])))
+            self.write('''<!doctype html>
+            <html lang="en">
+            <head>
+                <title>图像识别</title>
+                <style type="text/css">
+                body{text-align: center;
+                    background-image: url(static/bj.jpg);
+                    background-repeat: no-repeat;
+                    background-size: 100%;
+                }
+                #tou{color: #00ffff;
+                    font-size: 40px;}
+                </style>
+            </head>
+            <body>
+                <h1 id="tou">图像识别</h1>
+                <form enctype="multipart/form-data" name="form1" >
+            
+                <p style="font-size: 20px;color: #00ffff"><b>结果显示:</b></p>
+                <p>
+                    <img id="preview" alt="" name="pic" style="width: 50%" src=''' + "static/{}_.jpg".format(filename.
+                                                                                                             split(".")[
+                                                                                                                                        0]) +
+                       '''/>
+                           </p>
+                           </form>
+                       </body>
+                       </html>'''.format(a="static/{}_.jpg".format(filename.split(".")[0])))
             l = "static/{}_.jpg".format(filename.split(".")[0])
             pass
 
