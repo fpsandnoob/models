@@ -1,13 +1,17 @@
 import os
 import sys
-
+sys.path.append("/home/sitework/git/models/research/object_detection")
+sys.path.append("/home/sitework/git/models/research/slim")
+sys.path.append("/home/sitework/git/models/research/")
 import numpy as np
 import tensorflow as tf
 import tornado.web
 from PIL import Image
+import matplotlib as mll
+mll.use("Agg")
 from matplotlib import pyplot as plt
 
-sys.path.append("")
+sys.path.append(".")
 
 from utils import label_map_util
 
@@ -15,11 +19,11 @@ from utils import visualization_utils as vis_util
 
 config = tf.ConfigProto(device_count={'GPU': 0})
 # What model to download.
-MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
+MODEL_NAME = 'ssd_mobilenet_v1_coco_2017_11_17'
 MODEL_FILE = MODEL_NAME + '.tar.gz'
 DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 # Path to frozen detection graph. This is the actual model that is used for the object detection.
-PATH_TO_CKPT = MODEL_NAME + '/frozen_inference_graph.pb'
+PATH_TO_CKPT ='/home/sitework/git/models/research/object_detection/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
 detection_graph = tf.Graph()
 with detection_graph.as_default():
     od_graph_def = tf.GraphDef()
